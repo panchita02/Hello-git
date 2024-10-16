@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Picture of the Day App</title>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+        }
+        body.dark-mode {
+            background-color: #2c3e50;
+            color: #f0f0f0;
+        }
+        h1 {
+            font-family: 'Lora', serif;
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+        p {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .explanation {
+            text-align: justify; /* จัดข้อความให้อยู่แนวชิดขอบ */
+            margin: 20px auto;
+            max-width: 700px;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-family: 'Lora', serif; /* ใช้ฟอนต์ Lora สำหรับส่วนข้อมูลดวงดาว */
+            font-size: 1.0em; /* เพิ่มขนาดตัวอักษร */
+            line-height: 1.7; /* เพิ่มความสูงของบรรทัดเพื่อความอ่านง่าย */
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #ddd;
+            border: none;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        .theme-toggle.dark {
+            background-color: #555;
+            color: white;
+        }
+        .additional-info, .share-buttons {
+            margin: 20px 0;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .share-buttons a {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .share-buttons a:hover {
+            background-color: #2c80b4;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        body.dark-mode .explanation {
+            background-color: rgba(255, 255, 255, 0.8); /* เพิ่มพื้นหลังสีขาวโปร่งใสใน dark mode */
+            color: #000000; /* เปลี่ยนสีตัวอักษรเป็นสีดำ */
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ data.title }}</h1>
+        <p>Date: {{ data.date }}</p>
+    </header>
+
+    <main>
+        {% if data.media_type == 'image' %}
+            <img src="{{ data.url }}" alt="{{ data.title }}">
+        {% elif data.media_type == 'video' %}
+            <iframe width="560" height="315" src="{{ data.url }}" frameborder="0" allowfullscreen></iframe>
+        {% endif %}
+        <div class="explanation">
+            <p>{{ data.explanation }}</p>
+        </div>
+
+        <form method="GET" action="">
+            <label for="date">Choose a date (YYYY-MM-DD):</label>
+            <input type="date" id="date" name="date" value="{{ data.date }}" max="{{ data.date }}">
+            <button type="submit">Get Picture</button>
+        </form>
+
+        <div class="additional-info">
+            <p>More information:</p>
+            <ul>
+                <li><a href="{{ data.hdurl }}" target="_blank">View high-resolution image</a></li>
+                <li><a href="https://apod.nasa.gov/apod/astropix.html" target="_blank">NASA APOD Original Link</a></li>
+            </ul>
+        </div>
+
+        <div class="share-buttons">
+            <p>Share this picture:</p>
+            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text=Check out this amazing astronomy picture from {{ data.date }}: {{ data.title }}" target="_blank">
+                Share on Twitter
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank">
+                Share on Facebook
+            </a>
+        </div>
+    </main>
+
+    <button id="theme-toggle" class="theme-toggle">Switch to Dark Mode</button>
+
+    <footer>
+        <p>Content from NASA's Astronomy Picture of the Day. Visit <a href="https://apod.nasa.gov/apod/astropix.html" target="_blank">NASA's APOD website</a>.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            if (sessionStorage.getItem('dark-mode') === 'true') {
+                body.classList.add('dark-mode');
+                themeToggle.classList.add('dark');
+                themeToggle.textContent = 'Switch to Light Mode';
+            }
+
+            themeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                themeToggle.classList.toggle('dark');
+
+                if (body.classList.contains('dark-mode')) {
+                    sessionStorage.setItem('dark-mode', 'true');
+                    themeToggle.textContent = 'Switch to Light Mode';
+                } else {
+                    sessionStorage.setItem('dark-mode', 'false');
+                    themeToggle.textContent = 'Switch to Dark Mode';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
